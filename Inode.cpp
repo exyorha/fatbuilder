@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 #include <fstream>
+#include <vector>
 
 Inode::Inode(InodeType type, const std::string& name, Attributes attributes) : m_type(type), m_name(name), m_attributes(attributes) {
 
@@ -61,7 +62,7 @@ size_t Inode::calculateSize(size_t clusterSizeBytes) const {
 
 void Inode::buildFilesystem(IFilesystem* fs, const std::string& pathPrefix) {
 	auto fullPath = pathPrefix + "/" + m_name;
-	auto fullPathUnicode = utf8StringToWideString(fullPath);
+	auto fullPathUnicode = utf8StringToFatfsString(fullPath);
 
 	if (m_type == InodeType::Directory) {
 		if (!m_name.empty()) {
@@ -73,7 +74,7 @@ void Inode::buildFilesystem(IFilesystem* fs, const std::string& pathPrefix) {
 		}
 	}
 	else {
-		auto file = fs->open(fullPathUnicode, L"w");
+		auto file = fs->open(fullPathUnicode, "w");
 
 		std::ifstream source;
 		source.exceptions(std::ios::failbit | std::ios::badbit | std::ios::eofbit);

@@ -120,7 +120,7 @@
 #if defined(_WIN32)
 #define FF_LFN_UNICODE 1
 #else
-#define FF_LFN_UNICODE 3
+#define FF_LFN_UNICODE 2
 #endif
 /* This option switches the character encoding on the API when LFN is enabled.
 /

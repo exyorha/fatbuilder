@@ -3,7 +3,14 @@
 
 #include "IBlockDevice.h"
 
-#include "WindowsHandle.h"
+#if defined(_WIN32)
+#include <Windows.h>
+
+#include <memory>
+#include <type_traits>
+#else
+#include <unistd.h>
+#endif
 
 #include <filesystem>
 #include <cstdint>
@@ -24,10 +31,40 @@ private:
 	void doRead(uint64_t offset, void* buffer, size_t size);
 	void doWrite(uint64_t offset, const void* buffer, size_t size);
 
-	WindowsHandle m_handle;
+#if defined(_WIN32)
+	struct WindowsHandleDeleter {
+		inline void operator()(HANDLE handle) const {
+			CloseHandle(handle);
+		}
+	};
+#else
+	struct ManagedHandle {
+		ManagedHandle() : fd(-1) {
+
+		}
+
+		~ManagedHandle() {
+			if(fd >= 0)
+				close(fd);
+		}
+
+		ManagedHandle(const ManagedHandle &other) = delete;
+		ManagedHandle &operator =(const ManagedHandle &other) = delete;
+
+		int fd;
+	};
+#endif
+
+#if defined(_WIN32)
+	std::unique_ptr<std::remove_pointer<HANDLE>::type, WindowsHandleDeleter> m_handle;
+	alignas(4) unsigned char m_bounceBuffer[8192];
+#else
+	ManagedHandle m_handle;
+#endif
 	uint64_t m_mediaSize;
 	unsigned int m_allocationUnit;
-	alignas(4) unsigned char m_bounceBuffer[8192];
+#if defined(_WIN32)
+#endif
 };
 
 #endif

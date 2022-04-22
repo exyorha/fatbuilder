@@ -2,6 +2,7 @@
 #define FILESYSTEM_IBLOCKDEVICE_H
 
 #include <stdint.h>
+#include <string.h>
 
 class IBlockDevice {
 protected:

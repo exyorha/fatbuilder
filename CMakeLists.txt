@@ -19,16 +19,14 @@ add_executable(fatbuilder
 	main.cpp
 	RawBlockDevice.cpp
 	RawBlockDevice.h
-	resources.rc
-	StringUtils.cpp
 	StringUtils.h
-	WindowsHandle.h
-	WindowsResources.cpp
-	WindowsResources.h
 )
 target_link_libraries(fatbuilder PRIVATE CLI11::CLI11 fatfs)
 set_target_properties(fatbuilder PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED TRUE)
-target_compile_definitions(fatbuilder PRIVATE -DUNICODE -D_UNICODE)
+target_compile_definitions(fatbuilder PRIVATE -DUNICODE -D_UNICODE -D_FILE_OFFSET_BITS=64)
 if(WIN32)
 	target_compile_definitions(fatbuilder PRIVATE -DWIN32_LEAN_AND_MEAN -DNOMINMAX -D_VC_EXTRALEAN)
+	target_sources(fatbuilder PRIVATE
+		StringUtils.cpp
+	)
 endif()

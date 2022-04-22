@@ -1,5 +1,5 @@
 #include "StringUtils.h"
-
+#if defined(_WIN32)
 #include <Windows.h>
 #include <comdef.h>
 
@@ -42,3 +42,4 @@ std::string wideStringToUtf8String(const std::wstring& string) {
 
     return receiver;
 }
+#endif

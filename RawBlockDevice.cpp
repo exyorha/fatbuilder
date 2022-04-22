@@ -1,9 +1,15 @@
 #include "RawBlockDevice.h"
 
+#if defined(_WIN32)
 #include <Windows.h>
 #include <comdef.h>
+#else
+#include <fcntl.h>
+#include <system_error>
+#endif
 
 RawBlockDevice::RawBlockDevice(std::filesystem::path&& path, uint64_t size) : m_mediaSize(size), m_allocationUnit(512) {
+#if defined(_WIN32)
 	auto rawHandle = CreateFile(
 		path.c_str(),
 		GENERIC_READ | GENERIC_WRITE,
@@ -25,10 +31,25 @@ RawBlockDevice::RawBlockDevice(std::filesystem::path&& path, uint64_t size) : m_
 
 	if(!SetEndOfFile(m_handle.get()))
 		_com_raise_error(HRESULT_FROM_WIN32(GetLastError()));
+#else
+	if constexpr (sizeof(m_mediaSize) != sizeof(off_t)) {
+		if(m_mediaSize > std::numeric_limits<off_t>::max())
+			throw std::runtime_error("media size is out of range");
+	}
+
+	m_handle.fd = open(path.c_str(), O_RDWR | O_CREAT, 0644);
+	if(m_handle.fd < 0)
+		throw std::system_error(errno, std::generic_category());
+
+	auto result = ftruncate(m_handle.fd, m_mediaSize);
+	if(result < 0)
+		throw std::system_error(errno, std::generic_category());
+#endif
 }
 
 RawBlockDevice::~RawBlockDevice() = default;
 
+#if defined(_WIN32)
 void RawBlockDevice::read(uint64_t offset, void* buffer, size_t size) {
 	if (reinterpret_cast<uint32_t>(buffer) & 3) {
 		auto cbuffer = static_cast<uint8_t*>(buffer);
@@ -117,6 +138,49 @@ void RawBlockDevice::flush() {
 	if (!FlushFileBuffers(m_handle.get()))
 		_com_raise_error(HRESULT_FROM_WIN32(GetLastError()));
 }
+#else
+
+void RawBlockDevice::read(uint64_t offset, void* buffer, size_t size) {
+	if constexpr (sizeof(offset) != sizeof(off_t)) {
+		if(offset > std::numeric_limits<off_t>::max())
+			throw std::runtime_error("offset is out of range");
+	}
+
+	if(offset + size > m_mediaSize || offset + size < offset)
+		throw std::runtime_error("the access requested is out of the media bounds");
+
+	auto result = pread(m_handle.fd, buffer, size, offset);
+	if(result < 0)
+		throw std::system_error(errno, std::generic_category());
+
+	if(static_cast<size_t>(result) != size)
+		throw std::runtime_error("short read");
+}
+
+void RawBlockDevice::write(uint64_t offset, const void* buffer, size_t size) {
+	if constexpr (sizeof(offset) != sizeof(off_t)) {
+		if(offset > std::numeric_limits<off_t>::max())
+			throw std::runtime_error("offset is out of range");
+	}
+
+	if(offset + size > m_mediaSize || offset + size < offset)
+		throw std::runtime_error("the access requested is out of the media bounds");
+
+	auto result = pwrite(m_handle.fd, buffer, size, offset);
+	if(result < 0)
+		throw std::system_error(errno, std::generic_category());
+
+	if(static_cast<size_t>(result) != size)
+		throw std::runtime_error("short write");
+}
+
+void RawBlockDevice::flush() {
+	auto result = fsync(m_handle.fd);
+	if(result < 0)
+		throw std::system_error(errno, std::generic_category());
+}
+
+#endif
 
 uint64_t RawBlockDevice::mediaSize() const {
 	return m_mediaSize;

@@ -3,6 +3,7 @@
 
 #include "IFilesystem.h"
 #include "IFile.h"
+#include "StringUtils.h"
 
 #include <memory>
 #include <array>
@@ -18,9 +19,9 @@ public:
 	explicit FATFilesystem(std::unique_ptr<IBlockDevice>&& storage);
 	~FATFilesystem() override;
 
-	bool createDirectory(const std::wstring& name) override;
-	std::unique_ptr<IFile> open(const std::wstring& name, const std::wstring& mode) override;
-	virtual void setAttributes(const std::wstring& name, unsigned int attributes, unsigned int attributeMask) override;
+	bool createDirectory(const FatfsString& name) override;
+	std::unique_ptr<IFile> open(const FatfsString& name, const std::string& mode) override;
+	virtual void setAttributes(const FatfsString& name, unsigned int attributes, unsigned int attributeMask) override;
 
 private:
 	class AllocatedDriveNumber {
@@ -44,7 +45,7 @@ private:
 
 	class FATFile final : public IFile {
 	public:
-		FATFile(FATFilesystem *parent, const std::wstring& name, const std::wstring& mode);
+		FATFile(FATFilesystem *parent, const FatfsString& name, const std::string& mode);
 		~FATFile() override;
 
 		int64_t seek(int64_t offset, SeekWhence whence) override;
@@ -65,12 +66,16 @@ private:
 	friend DRESULT disk_write(BYTE pdrv, const BYTE* buff, LBA_t sector, UINT count);
 	friend DRESULT disk_ioctl(BYTE pdrv, BYTE cmd, void* buff);
 
-	std::wstring pathToPartition(const std::wstring &path = std::wstring());
+	FatfsString pathToPartition(const FatfsString &path = FatfsString());
 
 	AllocatedDriveNumber m_driveNumber;
 	std::unique_ptr<IBlockDevice> m_storage;
 	unsigned char m_workArea[128 * FF_MAX_SS];
 	FATFS m_fs;
+
+	static const unsigned char m_mbrCode[512];
+	static const unsigned char m_pbrCode_12_16[512];
+	static const unsigned char m_pbrCode_32[1536];
 };
 
 #endif
