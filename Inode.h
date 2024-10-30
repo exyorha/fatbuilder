@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <filesystem>
+#include <functional>
 
 class IFilesystem;
 
@@ -59,6 +60,8 @@ public:
 	size_t calculateSize(size_t clusterSizeBytes) const;
 
 	void buildFilesystem(IFilesystem* fs, const std::string& pathPrefix);
+
+	void enumerateInputs(const std::function<void(const std::filesystem::path&)>& func) const;
 
 private:
 	InodeType m_type;

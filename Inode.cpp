@@ -96,3 +96,14 @@ void Inode::buildFilesystem(IFilesystem* fs, const std::string& pathPrefix) {
 		fs->setAttributes(fullPathUnicode, m_attributes, AttributeArchive | AttributeSystem | AttributeHidden | AttributeReadOnly);
 	}
 }
+
+void Inode::enumerateInputs(const std::function<void(const std::filesystem::path&)>& func) const {
+	if (m_type == InodeType::Directory) {
+		for (const auto& child : m_children) {
+			child.second->enumerateInputs(func);
+		}
+	}
+	else {
+		func(m_sourceFileName);
+	}
+}

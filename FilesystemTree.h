@@ -25,6 +25,10 @@ public:
 
 	void buildFilesystem(IFilesystem* fs);
 
+	inline void enumerateInputs(const std::function<void(const std::filesystem::path&)>& func) const {
+		m_root->enumerateInputs(func);
+	}
+
 private:
 	void processLine(const std::vector<std::string>& line);
 	Attributes parseAttributes(const std::string& attrs);

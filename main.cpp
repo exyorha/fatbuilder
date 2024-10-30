@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
 
 	std::filesystem::path inputFilename;
 	std::filesystem::path outputFilename;
+	std::filesystem::path depfile;
 
 	FATFilesystemLayout layout;
 
@@ -31,6 +32,7 @@ int main(int argc, char** argv) {
 
 	app.add_option("--input", inputFilename)->required(true);
 	app.add_option("--output", outputFilename)->required(true);
+	app.add_option("--depfile", depfile);
 
 	app.add_option_function<std::filesystem::path>("--mbr-code", [&layout, &mbrCode](const std::filesystem::path& path) {
 		mbrCode = loadCodeFile(path, FATFilesystemLayout::MBRCodeSize);
@@ -51,6 +53,24 @@ int main(int argc, char** argv) {
 
 	FilesystemTree tree;
 	tree.parse(inputFilename);
+
+	if (!depfile.empty()) {
+		std::basic_ofstream<FatfsCharacter> stream;
+		stream.exceptions(std::ios::failbit | std::ios::eofbit | std::ios::badbit);
+		stream.open(depfile, std::ios::out | std::ios::trunc | std::ios::binary);
+
+		stream << std::filesystem::absolute(outputFilename).generic_string<FatfsCharacter>() << ": \\\n";
+
+		auto printInput = [&stream](const std::filesystem::path& inputFilename) {
+			stream << "\t" << std::filesystem::absolute(inputFilename).generic_string<FatfsCharacter>() << " \\\n";
+		};
+
+		printInput(inputFilename);
+
+		tree.enumerateInputs(printInput);
+
+		stream << "\n\n";
+	}
 
 	auto size = tree.calculateSize(32768, 1024 * 1024);
 
