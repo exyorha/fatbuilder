@@ -6,6 +6,8 @@ add_subdirectory(3rdparty)
 add_executable(fatbuilder
 	FATFilesystem.cpp
 	FATFilesystem.h
+	FATFilesystemLayout.cpp
+	FATFilesystemLayout.h
 	FilesystemTree.cpp
 	FilesystemTree.h
 	IBlockDevice.cpp

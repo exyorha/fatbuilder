@@ -4,6 +4,7 @@
 #include "IFilesystem.h"
 #include "IFile.h"
 #include "StringUtils.h"
+#include "FATFilesystemLayout.h"
 
 #include <memory>
 #include <array>
@@ -16,7 +17,7 @@ class IBlockDevice;
 
 class FATFilesystem final : public IFilesystem {
 public:
-	explicit FATFilesystem(std::unique_ptr<IBlockDevice>&& storage);
+	explicit FATFilesystem(std::unique_ptr<IBlockDevice>&& storage, const FATFilesystemLayout &layout = FATFilesystemLayout());
 	~FATFilesystem() override;
 
 	bool createDirectory(const FatfsString& name) override;
@@ -58,7 +59,7 @@ private:
 	};
 
 	void translateError(FRESULT result);
-	void installBootCode();
+	void installBootCode(const FATFilesystemLayout &layout);
 
 	friend DSTATUS disk_initialize(BYTE pdrv);
 	friend DSTATUS disk_status(BYTE pdrv);
@@ -73,9 +74,6 @@ private:
 	unsigned char m_workArea[128 * FF_MAX_SS];
 	FATFS m_fs;
 
-	static const unsigned char m_mbrCode[512];
-	static const unsigned char m_pbrCode_12_16[512];
-	static const unsigned char m_pbrCode_32[1536];
 };
 
 #endif
