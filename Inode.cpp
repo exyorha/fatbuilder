@@ -74,7 +74,7 @@ void Inode::buildFilesystem(IFilesystem* fs, const std::string& pathPrefix) {
 		}
 	}
 	else {
-		auto file = fs->open(fullPathUnicode, "w");
+		auto file = fs->open(fullPathUnicode, FF_T("w"));
 
 		std::ifstream source;
 		source.exceptions(std::ios::failbit | std::ios::badbit | std::ios::eofbit);

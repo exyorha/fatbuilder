@@ -20,7 +20,7 @@ public:
 	~FATFilesystem() override;
 
 	bool createDirectory(const FatfsString& name) override;
-	std::unique_ptr<IFile> open(const FatfsString& name, const std::string& mode) override;
+	std::unique_ptr<IFile> open(const FatfsString& name, const FatfsString& mode) override;
 	virtual void setAttributes(const FatfsString& name, unsigned int attributes, unsigned int attributeMask) override;
 
 private:
@@ -45,7 +45,7 @@ private:
 
 	class FATFile final : public IFile {
 	public:
-		FATFile(FATFilesystem *parent, const FatfsString& name, const std::string& mode);
+		FATFile(FATFilesystem *parent, const FatfsString& name, const FatfsString& mode);
 		~FATFile() override;
 
 		int64_t seek(int64_t offset, SeekWhence whence) override;

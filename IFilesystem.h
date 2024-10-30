@@ -18,7 +18,7 @@ public:
 	IFilesystem &operator =(const IFilesystem& other) = delete;
 
 	virtual bool createDirectory(const FatfsString& name) = 0;
-	virtual std::unique_ptr<IFile> open(const FatfsString& name, const std::string& mode) = 0;
+	virtual std::unique_ptr<IFile> open(const FatfsString& name, const FatfsString& mode) = 0;
 	virtual void setAttributes(const FatfsString& name, unsigned int attributes, unsigned int attributeMask) = 0;
 };
 

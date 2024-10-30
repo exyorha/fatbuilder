@@ -51,7 +51,7 @@ RawBlockDevice::~RawBlockDevice() = default;
 
 #if defined(_WIN32)
 void RawBlockDevice::read(uint64_t offset, void* buffer, size_t size) {
-	if (reinterpret_cast<uint32_t>(buffer) & 3) {
+	if (reinterpret_cast<uintptr_t>(buffer) & 3) {
 		auto cbuffer = static_cast<uint8_t*>(buffer);
 
 		while (size > 0) {
@@ -93,7 +93,7 @@ void RawBlockDevice::doRead(uint64_t offset, void *buffer, size_t size) {
 }
 
 void RawBlockDevice::write(uint64_t offset, const void* buffer, size_t size) {
-	if (reinterpret_cast<uint32_t>(buffer) & 3) {
+	if (reinterpret_cast<uintptr_t>(buffer) & 3) {
 		auto cbuffer = static_cast<const uint8_t*>(buffer);
 
 		while (size > 0) {

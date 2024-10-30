@@ -16,6 +16,8 @@
     inline std::string fatfsStringToUtf8String(const FatfsString &string) {
         return wideStringToUtf8String(string);
     }
+
+#define FF_T(x) L##x
 #else
     using FatfsString = std::string;
 
@@ -26,6 +28,7 @@
     inline const std::string &fatfsStringToUtf8String(const FatfsString &string) {
         return string;
     }
+#define FF_T(x) x
 #endif
 
 #endif

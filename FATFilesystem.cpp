@@ -286,16 +286,16 @@ void FATFilesystem::setAttributes(const FatfsString& name, unsigned int attribut
 	translateError(f_chmod(name.c_str(), attributes, attributeMask));
 }
 
-FATFilesystem::FATFile::FATFile(FATFilesystem* parent, const FatfsString& name, const std::string & mode) : m_parent(parent) {
-	static const std::unordered_map<std::string, int> modeMap{
-		{ "r", FA_READ },
-		{ "r+", FA_READ | FA_WRITE },
-		{ "w", FA_CREATE_ALWAYS | FA_WRITE },
-		{ "w+", FA_CREATE_ALWAYS | FA_WRITE | FA_READ },
-		{ "a", FA_OPEN_APPEND | FA_WRITE },
-		{ "a+", FA_OPEN_APPEND | FA_WRITE | FA_READ },
-		{ "wx", FA_CREATE_NEW | FA_WRITE },
-		{ "w+x", FA_CREATE_NEW | FA_WRITE | FA_READ }
+FATFilesystem::FATFile::FATFile(FATFilesystem* parent, const FatfsString& name, const FatfsString & mode) : m_parent(parent) {
+	static const std::unordered_map<FatfsString, int> modeMap{
+		{ FF_T("r"), FA_READ },
+		{ FF_T("r+"), FA_READ | FA_WRITE },
+		{ FF_T("w"), FA_CREATE_ALWAYS | FA_WRITE },
+		{ FF_T("w+"), FA_CREATE_ALWAYS | FA_WRITE | FA_READ },
+		{ FF_T("a"), FA_OPEN_APPEND | FA_WRITE },
+		{ FF_T("a+"), FA_OPEN_APPEND | FA_WRITE | FA_READ },
+		{ FF_T("wx"), FA_CREATE_NEW | FA_WRITE },
+		{ FF_T("w+x"), FA_CREATE_NEW | FA_WRITE | FA_READ }
 	};
 
 	auto it = modeMap.find(mode);
