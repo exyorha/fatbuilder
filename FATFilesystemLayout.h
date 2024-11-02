@@ -1,6 +1,8 @@
 #ifndef FAT_FILESYSTEM_LAYOUT_H
 #define FAT_FILESYSTEM_LAYOUT_H
 
+#include <cstring>
+
 struct FATFilesystemLayout {
     const unsigned char *mbrCode = m_mbrCode;
     const unsigned char *pbrCode12_16 = m_pbrCode_12_16;

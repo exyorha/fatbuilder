@@ -26,6 +26,8 @@
     inline const std::string &fatfsStringToUtf8String(const std::basic_string<char> &string) {
         return string;
     }
+
+    using FatfsCharacter = char;
 #define FF_T(x) x
 #endif
 
